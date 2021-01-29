@@ -1965,6 +1965,9 @@ namespace eosio {
 
          if( set_state_to_head_catchup ) {
             set_state( head_catchup );
+            if( blk_num == sync_last_requested_num ) {
+                request_next_chunk( std::move( g_sync ));
+            }
          } else {
             set_state( in_sync );
             send_handshakes();
