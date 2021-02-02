@@ -11,6 +11,7 @@
 #include <eosio/chain/block_state.hpp>
 #include <eosio/chain/transaction_metadata.hpp>
 #include <eosio/chain/trace.hpp>
+#include <eosio/chain/pbft_database.hpp>
 
 namespace eosio { namespace chain { namespace plugin_interface {
    using namespace eosio::chain;
@@ -29,6 +30,8 @@ namespace eosio { namespace chain { namespace plugin_interface {
       using irreversible_block     = channel_decl<struct irreversible_block_tag,    block_state_ptr>;
       using accepted_transaction   = channel_decl<struct accepted_transaction_tag,  transaction_metadata_ptr>;
       using applied_transaction    = channel_decl<struct applied_transaction_tag,   transaction_trace_ptr>;
+      using accepted_confirmation  = channel_decl<struct accepted_confirmation_tag, header_confirmation>;
+
    }
 
    namespace methods {
@@ -57,6 +60,26 @@ namespace eosio { namespace chain { namespace plugin_interface {
       namespace channels {
          using transaction_ack       = channel_decl<struct accepted_transaction_tag, std::pair<fc::exception_ptr, transaction_metadata_ptr>>;
       }
+   }
+
+   namespace pbft {
+       namespace incoming {
+           using prepare_channel = channel_decl<struct pbft_prepare_tag, pbft_metadata_ptr<pbft_prepare>>;
+           using commit_channel = channel_decl<struct pbft_commit_tag, pbft_metadata_ptr<pbft_commit>>;
+           using view_change_channel = channel_decl<struct pbft_view_change_tag, pbft_metadata_ptr<pbft_view_change>>;
+           using new_view_channel = channel_decl<struct pbft_new_view_tag, pbft_metadata_ptr<pbft_new_view>>;
+           using checkpoint_channel = channel_decl<struct pbft_checkpoint_tag, pbft_metadata_ptr<pbft_checkpoint>>;
+
+       }
+
+       namespace outgoing {
+           using prepare_channel = channel_decl<struct pbft_prepare_tag, pbft_prepare_ptr>;
+           using commit_channel = channel_decl<struct pbft_commit_tag, pbft_commit_ptr>;
+           using view_change_channel = channel_decl<struct pbft_view_change_tag, pbft_view_change_ptr>;
+           using new_view_channel = channel_decl<struct pbft_new_view_tag, pbft_new_view_ptr>;
+           using checkpoint_channel = channel_decl<struct pbft_checkpoint_tag, pbft_checkpoint_ptr>;
+
+       }
    }
 
 } } }

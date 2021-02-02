@@ -34,6 +34,15 @@ namespace eosio { namespace chain {
       chain_config                      configuration;
    };
 
+   class upgrade_property_object : public chainbase::object<upgrade_property_object_type, upgrade_property_object>
+   {
+      OBJECT_CTOR(upgrade_property_object)
+      //TODO: should use a more complicated struct to include id, digest and status of every single upgrade.
+
+      id_type                       id;
+      block_num_type                upgrade_target_block_num = 0;
+      block_num_type                upgrade_complete_block_num = 0;
+   };
 
 
    /**
@@ -71,11 +80,20 @@ namespace eosio { namespace chain {
       >
    >;
 
+   using upgrade_property_multi_index = chainbase::shared_multi_index_container<
+      upgrade_property_object,
+      indexed_by<
+         ordered_unique<tag<by_id>,
+            BOOST_MULTI_INDEX_MEMBER(upgrade_property_object, upgrade_property_object::id_type, id)
+         >
+      >
+   >;
 }}
 
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::global_property_object, eosio::chain::global_property_multi_index)
 CHAINBASE_SET_INDEX_TYPE(eosio::chain::dynamic_global_property_object,
                          eosio::chain::dynamic_global_property_multi_index)
+CHAINBASE_SET_INDEX_TYPE(eosio::chain::upgrade_property_object, eosio::chain::upgrade_property_multi_index)                         
 
 FC_REFLECT(eosio::chain::dynamic_global_property_object,
            (global_action_sequence)
@@ -83,4 +101,8 @@ FC_REFLECT(eosio::chain::dynamic_global_property_object,
 
 FC_REFLECT(eosio::chain::global_property_object,
            (proposed_schedule_block_num)(proposed_schedule)(configuration)
+          )
+          
+FC_REFLECT(eosio::chain::upgrade_property_object,
+           (upgrade_target_block_num)(upgrade_complete_block_num)           
           )

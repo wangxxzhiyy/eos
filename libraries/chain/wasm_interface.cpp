@@ -193,6 +193,23 @@ class privileged_api : public context_aware_api {
          });
       }
 
+      void set_upgrade_parameters_packed( array_ptr<char> packed_upgrade_parameters, size_t datalen) {
+         datastream<const char*> ds( packed_upgrade_parameters, datalen );
+         uint32_t target_num;
+         fc::raw::unpack(ds, target_num);
+
+         EOS_ASSERT( context.control.head_block_num() < target_num - 100, wasm_execution_error, "target block invalid");
+
+         EOS_ASSERT( !context.control.is_pbft_enabled(), wasm_execution_error, "pbft is already enabled");
+
+         EOS_ASSERT( !context.control.under_maintenance(), wasm_execution_error, "the system is under maintenance");
+
+         context.db.modify( context.control.get_upgrade_properties(),
+                 [&]( auto& uprops ) {
+             uprops.upgrade_target_block_num = target_num;
+         });
+      }
+
       bool is_privileged( account_name n )const {
          return context.db.get<account_object, by_name>( n ).privileged;
       }
@@ -1700,6 +1717,7 @@ REGISTER_INTRINSICS(privileged_api,
    (set_blockchain_parameters_packed, void(int,int)                         )
    (is_privileged,                    int(int64_t)                          )
    (set_privileged,                   void(int64_t, int)                    )
+   (set_upgrade_parameters_packed, void(int, int)                           )   
 );
 
 REGISTER_INJECTED_INTRINSICS(transaction_context,
